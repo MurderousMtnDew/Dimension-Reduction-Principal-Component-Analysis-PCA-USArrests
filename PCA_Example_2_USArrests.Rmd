@@ -1,0 +1,201 @@
+---
+title: "USArrest_PCA_example"
+author: ""
+date: "10/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PCA Example on US Arrest data
+
+This is making use of a built in example data set USArrests
+
+```{r}
+data(USArrests)
+head(USArrests)
+
+```
+
+We we will scale or standardize the data.  In scaling, we subtract the mean and divide by the standard deviation
+so the variables all have mean of zero and stddeve=1
+
+This is done because of the wide variation in the scale of measurement
+
+```{r}
+scArrests=apply(USArrests,2,scale)
+mean(scArrests)
+sd(scArrests)
+head(scArrests)
+```
+Note that the var-cov matrix of the scaled data is actually now a correlation matrix
+
+We can now run the PCA
+
+```{r}
+
+z2=prcomp(USArrests,scale=TRUE)
+summary(z2)
+```
+
+Let's plot the first two PCA axes scores
+
+```{r}
+require(ggplot2)
+
+State<-rownames(USArrests)
+PC1=z2$x[,1]
+PC2=z2$x[,2]
+PC3=z2$x[,3]
+PC4=z2$x[,4]
+myScores=data.frame(PC1=PC1,PC2=PC2,PC3=PC3,PC4=PC4)
+
+#quartz()
+#windows()
+
+
+```
+
+
+
+```{r}
+print(z2$rotation)
+```
+
+```{r}
+par(mfrow=c(2,2))
+barplot(z2$rotation[,1])
+barplot(z2$rotation[,2])
+barplot(z2$rotation[,3])
+barplot(z2$rotation[,4])
+
+
+```
+
+
+
+
+```{r}
+
+barplot(z2$rotation[,1])
+barplot(z2$rotation[,2])
+
+```
+
+
+
+
+```{r}
+
+p<-ggplot(myScores, aes(PC1,PC2)) + 
+  modelr::geom_ref_line(h = 0) +
+  modelr::geom_ref_line(v = 0) +
+   geom_text(aes(label = State), size = 3) +
+  xlab("First Principal Component") + 
+  ylab("Second Principal Component") 
+
+print(p)
+
+```
+
+
+
+x axis: murder,assault,rape; high left/low right
+y axis: urban population; high bottom/low top
+
+Top right: low urban population, low murder,assault,rape
+Bottom right: high urban population, low murder,assauly,rape
+Bottom left: high urban population, high murder,assault,rape
+Top left: low urban population, high murder,assault,rape
+
+
+
+
+
+
+
+
+```{r}
+
+barplot(z2$rotation[,3])
+barplot(z2$rotation[,4])
+
+
+```
+
+
+Looking at cumulative varience explained PC1 and PC2 are the most.
+
+
+
+
+```{r}
+p<-ggplot(myScores, aes(PC3,PC4)) + 
+  modelr::geom_ref_line(h = 0) +
+  modelr::geom_ref_line(v = 0) +
+   geom_text(aes(label = State), size = 3) +
+  xlab("Third Principal Component") + 
+  ylab("Fourth Principal Component") 
+
+print(p)
+
+```
+
+
+x axis: rape; low left/high right
+y axis: Murder,Assault; low murder;high assault;bottom/high murder;low assault;top
+
+Top right: high rape/high murder;low assault
+Bottom right: high rape/low murder;high assault
+Bottom left: low rape/low murder;high assault
+Top left: low rape/high murder;low assault
+
+
+
+
+```{r}
+
+pr.out=prcomp(USArrests,scale=TRUE)
+pr.out$rotation
+
+
+```
+
+
+
+```{r}
+
+biplot(pr.out, scale=0)
+
+
+```
+
+
+```{r}
+
+pr.out$rotation=-pr.out$rotation
+pr.out$x=-pr.out$x
+plot1 <- biplot(pr.out,scale=0)
+plot1
+
+
+
+```
+
+
+
+```{r}
+# 1. Open jpeg file
+jpeg("biplot_PCA_USArrests.jpg", width = 900, height = 900)
+# 2. Create the plot
+biplot(pr.out,scale=0)
+# 3. Close the file
+dev.off()
+
+```
+
+
+
+
